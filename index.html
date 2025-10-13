@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scraper Control Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', 'Helvetica Neue', sans-serif;
+            background: linear-gradient(180deg, #000 0%, #0a0a0a 100%);
+            color: #fff;
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .header {
+            background: rgba(18, 18, 18, 0.8);
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        h1 {
+            font-size: 1.75rem;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+            text-transform: capitalize;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #fff;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+            gap: 2rem;
+        }
+
+        .card {
+            background: rgba(28, 28, 30, 0.6);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+        }
+
+        .card h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding-bottom: 1rem;
+        }
+
+        .control-section {
+            margin-bottom: 1.5rem;
+        }
+
+        .file-upload-wrapper {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            margin-bottom: 1rem;
+        }
+
+        .file-upload-button {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px dashed rgba(255, 255, 255, 0.3);
+            border-radius: 12px;
+            padding: 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .file-upload-button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 255, 255, 0.5);
+        }
+
+        .file-name {
+            font-size: 0.875rem;
+            color: #8E8E93;
+            padding: 0.5rem;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 0.875rem 1.5rem;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary {
+            background: #fff;
+            color: #000;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #e5e5e5;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .btn-secondary:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .message {
+            margin-top: 1rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 0.875rem;
+            border-left: 3px solid #007AFF;
+        }
+
+        .reports-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .report-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .report-item:last-child {
+            border-bottom: none;
+        }
+
+        .report-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .report-icon {
+            font-size: 1.5rem;
+        }
+
+        .report-name {
+            font-size: 0.875rem;
+            color: #e5e5e5;
+        }
+
+        .btn-download {
+            background: transparent;
+            color: #007AFF;
+            border: 1px solid #007AFF;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-download:hover {
+            background: #007AFF;
+            color: #fff;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #8E8E93;
+            padding: 2rem 0;
+            font-size: 0.875rem;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+                padding: 1rem;
+            }
+            
+            .header-content {
+                flex-direction: column;
+                gap: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <h1>Scraper Control</h1>
+            <div class="status-badge" id="statusBadge">
+                <span class="status-dot"></span>
+                <span id="statusText">disconnected</span>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Control Panel -->
+        <div class="card">
+            <h2>Control Panel</h2>
+            
+            <div class="control-section">
+                <div class="file-upload-wrapper">
+                    <label for="fileInput" class="file-upload-button">
+                        📁 Choose Lookup File
+                    </label>
+                    <input type="file" id="fileInput" accept=".xlsx">
+                    <span class="file-name" id="fileName"></span>
+                </div>
+                
+                <button class="btn btn-secondary" id="uploadBtn" disabled>
+                    Upload File
+                </button>
+            </div>
+
+            <div class="control-section">
+                <button class="btn btn-primary" id="startBtn" disabled>
+                    ▶️ Start Scrape
+                </button>
+            </div>
+
+            <div class="message" id="message" style="display: none;"></div>
+        </div>
+
+        <!-- Reports List -->
+        <div class="card">
+            <h2>Reports</h2>
+            <div class="reports-list" id="reportsList">
+                <p class="empty-state">No reports available. Run a scrape to generate reports.</p>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // IMPORTANT: Replace with your Raspberry Pi's IP address
+        const API_BASE_URL = 'http://192.168.1.100:5000';
+
+        let selectedFile = null;
+
+        // DOM Elements
+        const statusBadge = document.getElementById('statusBadge');
+        const statusText = document.getElementById('statusText');
+        const fileInput = document.getElementById('fileInput');
+        const fileName = document.getElementById('fileName');
+        const uploadBtn = document.getElementById('uploadBtn');
+        const startBtn = document.getElementById('startBtn');
+        const messageDiv = document.getElementById('message');
+        const reportsList = document.getElementById('reportsList');
+
+        // File input handler
+        fileInput.addEventListener('change', (e) => {
+            selectedFile = e.target.files[0];
+            if (selectedFile) {
+                fileName.textContent = selectedFile.name;
+                uploadBtn.disabled = false;
+            } else {
+                fileName.textContent = '';
+                uploadBtn.disabled = true;
+            }
+            hideMessage();
+        });
+
+        // Upload button handler
+        uploadBtn.addEventListener('click', async () => {
+            if (!selectedFile) return;
+
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+
+            const formData = new FormData();
+            formData.append('file', selectedFile);
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/upload-lookup`, {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                    fileInput.value = '';
+                    fileName.textContent = '';
+                    selectedFile = null;
+                    uploadBtn.disabled = true;
+                    uploadBtn.textContent = 'Upload File';
+                } else {
+                    showMessage(`❌ ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Upload failed. Check connection.', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload File';
+            }
+        });
+
+        // Start scrape button handler
+        startBtn.addEventListener('click', async () => {
+            startBtn.disabled = true;
+            
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/start-scrape`, {
+                    method: 'POST'
+                });
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showMessage(`✅ ${data.message}`, 'success');
+                } else {
+                    showMessage(`❌ ${data.error || data.message}`, 'error');
+                }
+            } catch (error) {
+                showMessage('❌ Failed to start scraper. Check connection.', 'error');
+            }
+            
+            setTimeout(fetchStatus, 1000);
+        });
+
+        // Fetch status
+        async function fetchStatus() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/status`);
+                const data = await response.json();
+                updateStatus(data.status);
+            } catch (error) {
+                updateStatus('disconnected');
+            }
+        }
+
+        // Update status badge
+        function updateStatus(status) {
+            statusText.textContent = status;
+            
+            const colors = {
+                'running': '#007AFF',
+                'finished': '#34C759',
+                'error': '#FF3B30',
+                'idle': '#8E8E93',
+                'disconnected': '#FF9500'
+            };
+            
+            statusBadge.style.backgroundColor = colors[status] || colors.disconnected;
+            
+            // Enable/disable start button based on status
+            startBtn.disabled = (status === 'running' || status === 'disconnected');
+            startBtn.textContent = status === 'running' ? '⏳ Scraping...' : '▶️ Start Scrape';
+        }
+
+        // Fetch reports
+        async function fetchReports() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/reports`);
+                const data = await response.json();
+                displayReports(data.reports || []);
+            } catch (error) {
+                console.error('Failed to fetch reports:', error);
+            }
+        }
+
+        // Display reports
+        function displayReports(reports) {
+            if (reports.length === 0) {
+                reportsList.innerHTML = '<p class="empty-state">No reports available. Run a scrape to generate reports.</p>';
+                return;
+            }
+
+            const reportsHTML = reports.map(report => `
+                <div class="report-item">
+                    <div class="report-info">
+                        <span class="report-icon">📊</span>
+                        <span class="report-name">${report}</span>
+                    </div>
+                    <a href="${API_BASE_URL}/api/download-report/${report}" 
+                       download 
+                       class="btn-download">
+                        ⬇️ Download
+                    </a>
+                </div>
+            `).join('');
+
+            reportsList.innerHTML = reportsHTML;
+        }
+
+        // Show message
+        function showMessage(text, type) {
+            messageDiv.textContent = text;
+            messageDiv.style.display = 'block';
+            messageDiv.style.borderLeftColor = type === 'error' ? '#FF3B30' : '#34C759';
+        }
+
+        // Hide message
+        function hideMessage() {
+            messageDiv.style.display = 'none';
+        }
+
+        // Poll status and reports every 3 seconds
+        setInterval(() => {
+            fetchStatus();
+            const currentStatus = statusText.textContent;
+            if (currentStatus !== 'running') {
+                fetchReports();
+            }
+        }, 3000);
+
+        // Initial fetch
+        fetchStatus();
+        fetchReports();
+    </script>
+</body>
+</html>
